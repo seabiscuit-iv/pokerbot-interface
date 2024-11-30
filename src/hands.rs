@@ -1,3 +1,5 @@
+use core::panic;
+
 use crate::{card, Card, Suit, Value};
 
 pub type Hand = [Card; 5];
@@ -65,14 +67,30 @@ impl std::cmp::Ord for HAND_TYPE {
                     }
                 },
                 (Trips(a), Trips(d)) => {
-                    a.partial_cmp(d).expect("Error comparing hands of type HighCard")
+                    a.partial_cmp(d).expect("Error comparing hands of type Trips")
                 },
                 (Straight(a), Straight(d)) => {
-                    a.partial_cmp(d).expect("Error comparing hands of type HighCard")
+                    a.partial_cmp(d).expect("Error comparing hands of type Straight")
                 },
                 (Flush(a, _), Flush(d, _)) => {
-                    a.partial_cmp(d).expect("Error comparing hands of type HighCard")
-                }
+                    a.partial_cmp(d).expect("Error comparing hands of type Flush")
+                },
+                (FullHouse(a_1, a_2), FullHouse(d_1, d_2)) => {
+                    match a_1.partial_cmp(d_1).expect("Error comparing hands of type FullHouse, Trips") {
+                        std::cmp::Ordering::Greater => std::cmp::Ordering::Greater,
+                        std::cmp::Ordering::Less => std::cmp::Ordering::Less,
+                        std::cmp::Ordering::Equal => {
+                            a_2.partial_cmp(d_2).expect("Error comparing hands of type FullHouse, Pair")
+                        },
+                    }
+                },
+                (Quads(a), Quads(d)) => {
+                    a.partial_cmp(d).expect("Error comparing hands of type Quads")
+                },
+                (StraightFlush(a, _), StraightFlush(d, _)) => {
+                    a.partial_cmp(d).expect("Error comparing hands of type StraightFlush")
+                },
+                _ => panic!("Error Comparing Hands, Unreachable State")
             }
         }
     }
