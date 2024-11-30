@@ -1,3 +1,6 @@
+use core::fmt;
+
+use rand::{seq::SliceRandom, thread_rng};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
@@ -89,6 +92,30 @@ impl From<(u32, Suit)> for Card {
     }
 }
 
+impl fmt::Display for Card {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let num: u32 = self.value.into();
+        let c: char = match num {
+            2..=9 => char::from_digit(num, 10).unwrap(),
+            10 => 'T',
+            11 => 'J',
+            12 => 'Q',
+            13 => 'K',
+            14 => 'A',
+            _ => panic!("Error destructuring value of Card")
+        };
+
+        let suit: char = match self.suit {
+            Suit::Club => 'C',
+            Suit::Spade => 'S',
+            Suit::Diamond => 'D',
+            Suit::Heart => 'H',
+        };
+
+        write!(f, "{}-{}", c, suit)
+    }
+}
+
 
 
 impl Ord for Card {
@@ -119,5 +146,21 @@ impl Deck {
                 })
             }).flatten().collect::<Vec<Card>>()
         )
+    }
+
+    pub fn reset(&mut self) {
+        *self = Deck::default()
+    }
+
+    pub fn shuffle(&mut self){
+        self.0.shuffle(&mut thread_rng());
+    }
+
+    pub fn draw(&mut self) -> Card {
+        self.0.remove(0)
+    }
+
+    pub fn count(&self) -> usize {
+        self.0.len()
     }
 }

@@ -1,4 +1,4 @@
-use core::panic;
+use core::{fmt, panic};
 
 use crate::{card, Card, Suit, Value};
 
@@ -42,7 +42,7 @@ impl std::cmp::Ord for HAND_TYPE {
         use HAND_TYPE::*;
 
         let att_str: u32 = self.clone().into();
-        let def_str: u32 = self.clone().into();
+        let def_str: u32 = other.clone().into();
 
         if att_str > def_str {
             return std::cmp::Ordering::Greater
@@ -95,6 +95,30 @@ impl std::cmp::Ord for HAND_TYPE {
         }
     }
 }
+
+
+
+pub fn compare_hands(mut att: Hand, mut def: Hand) -> std::cmp::Ordering{
+    match get_hand_type(att).cmp(&get_hand_type(def)) {
+        std::cmp::Ordering::Greater => std::cmp::Ordering::Greater,
+        std::cmp::Ordering::Less => std::cmp::Ordering::Less,
+        std::cmp::Ordering::Equal => {
+            att.sort();
+            def.sort();
+
+            for (a, d) in att.iter().zip(def).rev() {
+                if a.value > d.value {
+                    return std::cmp::Ordering::Greater
+                } else if a.value < d.value {
+                    return std::cmp::Ordering::Less
+                }
+            }
+
+            std::cmp::Ordering::Equal
+        }
+    }
+}
+
 
 
 
