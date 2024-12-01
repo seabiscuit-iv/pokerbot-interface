@@ -304,7 +304,7 @@ pub fn get_hand_type(hand: Hand) -> HandType {
 
 
 
-pub fn _best_hand(pocket: [Card; 2], board: [Card; 5]) -> (Hand, HandType) {
+pub fn best_hand(pocket: &[Card; 2], board: [Card; 5]) -> (Hand, HandType) {
     let hand = board
         .iter()
         .chain(pocket.iter())

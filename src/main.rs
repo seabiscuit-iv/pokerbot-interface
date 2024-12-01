@@ -10,19 +10,9 @@ use game_manager::Game;
 use hands::{best_hand_varsize, compare_hands, display_cards};
 
 fn main() {
-    // println!("Cards Dealt");
-    // println!("Player 1: {}", display_cards(&player_one));
-    // println!("Player 2: {}\n", display_cards(&player_two));
 
-
-    // let mut board: Vec<Card> = vec![
-    //     deck.draw(),
-    //     deck.draw(),
-    //     deck.draw()
-    // ];
 
     // //FLOP
-    // println!("Flop: {}", display_cards(&board));
 
     // let best_hand_one = best_hand_varsize(player_one.iter().chain(board.iter()).map(|x| *x).collect());
     // let best_hand_two = best_hand_varsize(player_two.iter().chain(board.iter()).map(|x| *x).collect());
