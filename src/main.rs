@@ -1,7 +1,8 @@
-mod resources;
 mod card;
 mod hands;
 mod banker;
+mod pokerbot;
+mod game_manager;
 
 
 use card::{Card, Deck, Suit, Value};
