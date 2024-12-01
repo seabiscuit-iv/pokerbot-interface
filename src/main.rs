@@ -7,7 +7,6 @@ mod game_manager;
 
 use card::{Card, Deck, Suit, Value};
 use game_manager::Game;
-use hands::{best_hand_varsize, compare_hands, display_cards};
 use pokerbot::{BasicPokerBot, PokerBot};
 
 fn main() {
