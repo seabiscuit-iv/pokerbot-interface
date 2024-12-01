@@ -1,11 +1,46 @@
-use core::{fmt, panic};
+use core::panic;
+use std::ops::{Deref, DerefMut};
 
-use crate::{card, Card, Suit, Value};
+use itertools::Itertools;
 
-pub type Hand = [Card; 5];
+use crate::{Card, Suit, Value};
+
+#[derive(Clone, Copy)]
+pub struct Hand([Card; 5]);
+
+impl Deref for Hand {
+    type Target = [Card; 5];
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Hand {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl From<Vec<Card>> for Hand {    
+    fn from(value: Vec<Card>) -> Self {
+        let hand : [Card; 5] = value.try_into().expect("Error converting Vec<Card> to Hand");
+        Self (
+            hand
+        )
+    }
+}
+
+
+pub fn display_cards(cards: &Vec<Card>) -> String {
+    cards.iter().map(|s| format!("{}", s)).collect::<Vec<String>>().join(" ")
+}
+
+
+
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq)]
-pub enum HAND_TYPE {
+pub enum HandType {
     HighCard(Value),
     Pair(Value),
     TwoPair(Value, Value),
@@ -18,9 +53,9 @@ pub enum HAND_TYPE {
 }
 
 
-impl Into<u32> for HAND_TYPE {
+impl Into<u32> for HandType {
     fn into(self) -> u32 {
-        use HAND_TYPE::*;
+        use HandType::*;
 
         match self {
             HighCard(_) => 1,
@@ -37,9 +72,9 @@ impl Into<u32> for HAND_TYPE {
 } 
 
 
-impl std::cmp::Ord for HAND_TYPE {
+impl std::cmp::Ord for HandType {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        use HAND_TYPE::*;
+        use HandType::*;
 
         let att_str: u32 = self.clone().into();
         let def_str: u32 = other.clone().into();
@@ -106,7 +141,7 @@ pub fn compare_hands(mut att: Hand, mut def: Hand) -> std::cmp::Ordering{
             att.sort();
             def.sort();
 
-            for (a, d) in att.iter().zip(def).rev() {
+            for (a, d) in att.iter().zip(def.iter()).rev() {
                 if a.value > d.value {
                     return std::cmp::Ordering::Greater
                 } else if a.value < d.value {
@@ -120,12 +155,8 @@ pub fn compare_hands(mut att: Hand, mut def: Hand) -> std::cmp::Ordering{
 }
 
 
-
-
-pub fn get_hand_type(hand: Hand) -> HAND_TYPE {
-    use HAND_TYPE::*;
-    use Value::*;
-    use Suit::*;
+pub fn get_hand_type(hand: Hand) -> HandType {
+    use HandType::*;
 
     let mut hand = hand;
 
@@ -268,4 +299,52 @@ pub fn get_hand_type(hand: Hand) -> HAND_TYPE {
 
 
     hand_type
+}
+
+
+
+
+pub fn _best_hand(pocket: [Card; 2], board: [Card; 5]) -> (Hand, HandType) {
+    let hand = board
+        .iter()
+        .chain(pocket.iter())
+        .combinations(5)
+        .max_by(|a, d| {
+            compare_hands(
+                a.iter().map(|x|  {**x}).collect::<Vec<Card>>().into(),
+                d.iter().map(|x|  {**x}).collect::<Vec<Card>>().into(),
+            )
+        })
+        .unwrap()
+        .iter()
+        .map(|x| **x)
+        .collect::<Vec<Card>>()
+        .into();
+
+    (hand, get_hand_type(hand))
+}
+
+
+
+pub fn best_hand_varsize(cards: Vec<Card>) -> (Hand, HandType) {
+    if cards.len() < 5 {
+        panic!("Error best_hand_varsize called on card set of len less than 5");
+    }
+
+    let hand = cards
+        .iter()
+        .combinations(5)
+        .max_by(|a, d| {
+            compare_hands(
+                a.iter().map(|x|  {**x}).collect::<Vec<Card>>().into(),
+                d.iter().map(|x|  {**x}).collect::<Vec<Card>>().into(),
+            )
+        })
+        .unwrap()
+        .iter()
+        .map(|x| **x)
+        .collect::<Vec<Card>>()
+        .into();
+
+    (hand, get_hand_type(hand))
 }

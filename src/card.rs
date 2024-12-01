@@ -1,4 +1,5 @@
 use core::fmt;
+use std::ops::Deref;
 
 use rand::{seq::SliceRandom, thread_rng};
 use strum::IntoEnumIterator;
@@ -148,7 +149,7 @@ impl Deck {
         )
     }
 
-    pub fn reset(&mut self) {
+    pub fn _reset(&mut self) {
         *self = Deck::default()
     }
 
@@ -160,7 +161,16 @@ impl Deck {
         self.0.remove(0)
     }
 
-    pub fn count(&self) -> usize {
+    pub fn _count(&self) -> usize {
         self.0.len()
+    }
+}
+
+
+impl Deref for Deck {
+    type Target = Vec<Card>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

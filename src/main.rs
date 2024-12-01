@@ -2,10 +2,9 @@ mod resources;
 mod card;
 mod hands;
 
+
 use card::{Card, Deck, Suit, Value};
-use hands::{compare_hands, get_hand_type, Hand};
-use Suit::*;
-use Value::*;
+use hands::{best_hand_varsize, compare_hands, display_cards};
 
 fn main() {
     let mut deck = Deck::default();
@@ -22,57 +21,55 @@ fn main() {
         deck.draw()
     ];
 
-    let board = [
+    println!("Cards Dealt");
+    println!("Player 1: {}", display_cards(&player_one.to_vec()));
+    println!("Player 2: {}\n", display_cards(&player_two.to_vec()));
+
+
+    let mut board: Vec<Card> = vec![
         deck.draw(),
         deck.draw(),
-        deck.draw(),
+        deck.draw()
     ];
 
-    let one_hand =
-        player_one
-        .iter()
-        .chain(board.iter())
-        .map(|x| *x)
-        .collect::<Vec<Card>>()
-        .try_into()
-        .unwrap();
-    let two_hand =
-        player_two
-        .iter()
-        .chain(board.iter())
-        .map(|x| *x)
-        .collect::<Vec<Card>>()
-        .try_into()
-        .unwrap();
+    //FLOP
+    println!("Flop: {}", display_cards(&board));
 
-    let one_hand_type = get_hand_type(player_one
-        .iter()
-        .chain(board.iter())
-        .map(|x| *x)
-        .collect::<Vec<Card>>()
-        .try_into()
-        .unwrap()
-    );
+    let best_hand_one = best_hand_varsize(player_one.iter().chain(board.iter()).map(|x| *x).collect());
+    let best_hand_two = best_hand_varsize(player_two.iter().chain(board.iter()).map(|x| *x).collect());
 
-    let two_hand_type = get_hand_type(player_two
-        .iter()
-        .chain(board.iter())
-        .map(|x| *x)
-        .collect::<Vec<Card>>()
-        .try_into()
-        .unwrap()
-    );
+    println!("Player 1 has a {:?}", best_hand_one.1);
+    println!("Player 2 has a {:?}\n", best_hand_two.1);
 
-    let winner = match compare_hands(one_hand, two_hand) {
-        std::cmp::Ordering::Greater => "Player One Wins!",
-        std::cmp::Ordering::Less => "Player Two Wins!",
-        std::cmp::Ordering::Equal => "Tie, Chop!",
-    };
 
-    println!("Player 1: {}", player_one.iter().map(|s| format!("{}", s)).collect::<Vec<String>>().join(" "));
-    println!("Player 2: {}", player_two.iter().map(|s| format!("{}", s)).collect::<Vec<String>>().join(" "));
-    println!("Board: {}\n", board.iter().map(|s| format!("{}", s)).collect::<Vec<String>>().join(" "));
-    println!("Player 1 draws {:?}", one_hand_type);
-    println!("Player 2 draws {:?}", two_hand_type);
-    println!("{}", winner);
+    //TURN
+    board.push(deck.draw());
+    println!("Turn: {}", display_cards(&board));
+
+    let best_hand_one = best_hand_varsize(player_one.iter().chain(board.iter()).map(|x| *x).collect());
+    let best_hand_two = best_hand_varsize(player_two.iter().chain(board.iter()).map(|x| *x).collect());
+
+    println!("Player 1 has a {:?}", best_hand_one.1);
+    println!("Player 2 has a {:?}\n", best_hand_two.1);
+
+
+    //River
+    board.push(deck.draw());
+    println!("River: {}", display_cards(&board));
+
+    let best_hand_one = best_hand_varsize(player_one.iter().chain(board.iter()).map(|x| *x).collect());
+    let best_hand_two = best_hand_varsize(player_two.iter().chain(board.iter()).map(|x| *x).collect());
+
+    println!("Player 1 has a {:?}", best_hand_one.1);
+    println!("Player 2 has a {:?}", best_hand_two.1);
+    
+    match compare_hands(best_hand_one.0, best_hand_two.0) {
+        std::cmp::Ordering::Less => println!("Player Two Wins"),
+        std::cmp::Ordering::Greater => println!("Player One Wins"),
+        std::cmp::Ordering::Equal => println!("Tie, Chop"),
+    }
+
 }
+
+
+
