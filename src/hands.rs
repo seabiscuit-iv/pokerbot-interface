@@ -32,7 +32,7 @@ impl From<Vec<Card>> for Hand {
 }
 
 
-pub fn display_cards(cards: &Vec<Card>) -> String {
+pub fn display_cards(cards: &[Card]) -> String {
     cards.iter().map(|s| format!("{}", s)).collect::<Vec<String>>().join(" ")
 }
 

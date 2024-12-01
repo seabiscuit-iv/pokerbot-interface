@@ -1,6 +1,7 @@
 mod resources;
 mod card;
 mod hands;
+mod banker;
 
 
 use card::{Card, Deck, Suit, Value};
@@ -22,8 +23,8 @@ fn main() {
     ];
 
     println!("Cards Dealt");
-    println!("Player 1: {}", display_cards(&player_one.to_vec()));
-    println!("Player 2: {}\n", display_cards(&player_two.to_vec()));
+    println!("Player 1: {}", display_cards(&player_one));
+    println!("Player 2: {}\n", display_cards(&player_two));
 
 
     let mut board: Vec<Card> = vec![
