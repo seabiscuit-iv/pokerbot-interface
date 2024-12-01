@@ -1,16 +1,18 @@
 
-use crate::{banker::Banker, card::{Card, Deck}, hands::{best_hand, compare_hands, display_cards}};
+use crate::{banker::Banker, card::{Card, Deck}, hands::{best_hand, compare_hands, display_cards}, pokerbot::PokerBot};
 
 pub struct Game {
     deck: Deck,
-    num_players: u32
+    num_players: u32,
+    players: Vec<Box<dyn PokerBot>>
 }
 
 impl Game {
-    pub fn new(num_players: u32) -> Self{
+    pub fn new(players: Vec<Box<dyn PokerBot>>) -> Self{
         Self {
             deck: Deck::default(),
-            num_players
+            num_players: players.len() as u32,
+            players
         }
     }
 

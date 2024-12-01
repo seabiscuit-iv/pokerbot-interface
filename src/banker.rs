@@ -23,3 +23,11 @@ impl Banker {
         self.pot = 0;
     }
 }
+
+
+
+pub enum Response {
+    Raise(u32),
+    Call,
+    Fold
+}

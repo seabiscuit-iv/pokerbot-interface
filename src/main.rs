@@ -8,6 +8,7 @@ mod game_manager;
 use card::{Card, Deck, Suit, Value};
 use game_manager::Game;
 use hands::{best_hand_varsize, compare_hands, display_cards};
+use pokerbot::{BasicPokerBot, PokerBot};
 
 fn main() {
 
@@ -47,10 +48,13 @@ fn main() {
     //     std::cmp::Ordering::Greater => println!("Player One Wins"),
     //     std::cmp::Ordering::Equal => println!("Tie, Chop"),
     // }
+    let mut bots: Vec<Box<dyn PokerBot>> = Vec::new();
 
-    let mut game = Game::new(4);
+    bots.push(Box::new(BasicPokerBot));
+    bots.push(Box::new(BasicPokerBot));
+
+    let mut game = Game::new(bots);
     game.play_round();
-
 }
 
 
