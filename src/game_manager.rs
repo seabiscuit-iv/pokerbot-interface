@@ -1,6 +1,5 @@
-use core::num;
 
-use crate::{banker::Banker, card::{Card, Deck}};
+use crate::{banker::Banker, card::{Card, Deck}, hands::display_cards};
 
 pub struct Game {
     deck: Deck,
@@ -16,8 +15,16 @@ impl Game {
     }
 
     pub fn play_round(&mut self) {
+        self.deck.reset();
         self.deck.shuffle();
 
+        let mut game_state = GameState::new(self.num_players);
+
+        game_state.player_states.resize_with(self.num_players as usize, || PlayerState::new([self.deck.draw(), self.deck.draw()]));
+
+        for (i, player) in game_state.player_states.iter().enumerate() {
+            println!("Player {}: {}", i, display_cards(&player.cards));
+        }
     }
 }
 
@@ -38,6 +45,7 @@ impl GameState {
 }
 
 
+#[derive(Clone, Copy)]
 pub struct PlayerState {
     cards: [Card; 2]
 }

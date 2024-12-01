@@ -149,7 +149,7 @@ impl Deck {
         )
     }
 
-    pub fn _reset(&mut self) {
+    pub fn reset(&mut self) {
         *self = Deck::default()
     }
 
