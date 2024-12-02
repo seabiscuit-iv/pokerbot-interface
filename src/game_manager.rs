@@ -115,9 +115,9 @@ impl Game {
 
             let resp = match round {
                 ROUND::PREFLOP => self.players[turn as usize].preflop(0, &self.banker, &game_state.player_states[turn as usize]),
-                ROUND::FLOP => self.players[turn as usize].turn(active_bet, &self.banker, &game_state.player_states[turn as usize], &(game_state.board)),
+                ROUND::FLOP => self.players[turn as usize].flop(active_bet, &self.banker, &game_state.player_states[turn as usize], &(game_state.board)),
                 ROUND::TURN => self.players[turn as usize].turn(active_bet, &self.banker, &game_state.player_states[turn as usize], &(game_state.board)),
-                ROUND::RIVER => self.players[turn as usize].turn(active_bet, &self.banker, &game_state.player_states[turn as usize], &(game_state.board)),
+                ROUND::RIVER => self.players[turn as usize].river(active_bet, &self.banker, &game_state.player_states[turn as usize], &(game_state.board)),
             };
 
 
@@ -181,7 +181,7 @@ impl GameState {
 #[derive(Clone, Copy)]
 pub struct PlayerState {
     id: u32,
-    cards: [Card; 2],
+    pub cards: [Card; 2],
     in_game: bool,
     total_amt_bet: u32
 }
