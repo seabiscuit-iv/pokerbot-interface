@@ -1,10 +1,20 @@
 
 use crate::{banker::{Banker, Response}, card::{Card, Deck}, hands::{best_hand, compare_hands, display_cards}, pokerbot::PokerBot};
 
+
+enum ROUND {
+    PREFLOP,
+    FLOP,
+    TURN,
+    RIVER
+}
+
+
 pub struct Game {
     deck: Deck,
     num_players: u32,
-    players: Vec<Box<dyn PokerBot>>
+    banker: Banker,
+    players: Vec<Box<dyn PokerBot>>,
 }
 
 impl Game {
@@ -12,11 +22,17 @@ impl Game {
         Self {
             deck: Deck::default(),
             num_players: players.len() as u32,
-            players
+            banker: Banker::new(players.len() as u32, 100),
+            players,
         }
     }
 
     pub fn play_round(&mut self) {
+        for player in self.banker.money.iter().enumerate() {
+            println!("Player {} has {}", player.0, player.1);
+        }
+        println!("");
+
         self.deck.reset();
         self.deck.shuffle();
 
@@ -36,8 +52,8 @@ impl Game {
         }
 
         //Pre-Flop Bets
-        self.bet_rounds(&mut game_state, self.num_players,  true);
-        println!("Pot is now {}\n", game_state.banker.pot);
+        self.bet_rounds(&mut game_state, self.num_players,  ROUND::PREFLOP);
+        println!("Pot is now {}\n", self.banker.pot);
 
         //Flop
         game_state.board.append(&mut [
@@ -49,8 +65,8 @@ impl Game {
         println!("Flop: {}", display_cards(&game_state.board));
 
         //Flop Bets
-        self.bet_rounds(&mut game_state, self.num_players, false);
-        println!("Pot is now {}\n", game_state.banker.pot);
+        self.bet_rounds(&mut game_state, self.num_players, ROUND::FLOP);
+        println!("Pot is now {}\n", self.banker.pot);
 
 
         //Turn
@@ -58,8 +74,8 @@ impl Game {
         println!("Turn: {}", display_cards(&game_state.board));
 
         //Turn Bets
-        self.bet_rounds(&mut game_state, self.num_players, false);
-        println!("Pot is now {}\n", game_state.banker.pot);
+        self.bet_rounds(&mut game_state, self.num_players, ROUND::TURN);
+        println!("Pot is now {}\n", self.banker.pot);
 
 
         //River
@@ -67,8 +83,8 @@ impl Game {
         println!("River: {}", display_cards(&game_state.board));
 
         //River Bets
-        self.bet_rounds(&mut game_state, self.num_players, false);
-        println!("Pot is now {}\n", game_state.banker.pot);
+        self.bet_rounds(&mut game_state, self.num_players, ROUND::RIVER);
+        println!("Pot is now {}\n", self.banker.pot);
         
         //Showdown
         let mut states = game_state.player_states;
@@ -78,11 +94,16 @@ impl Game {
         });
 
         let winner = states.last().unwrap();
+        self.banker.win(winner.id);
 
-        println!("Winner: Player {} with a {:?}", winner.id, best_hand(&winner.cards, game_state.board.clone().try_into().unwrap()).1)
+        println!("Winner: Player {} with a {:?}\n", winner.id, best_hand(&winner.cards, game_state.board.clone().try_into().unwrap()).1);
+    
+        for player in self.banker.money.iter().enumerate() {
+            println!("Player {} has {}", player.0, player.1);
+        }
     }
 
-    fn bet_rounds(&mut self, game_state: &mut GameState, num_players: u32, inital: bool) {
+    fn bet_rounds(&mut self, game_state: &mut GameState, num_players: u32, round: ROUND) {
         let mut turn: u32 = 0;
         let mut active_bet: u32 = 0;
         let mut bet_starter: u32 = 0;
@@ -92,11 +113,13 @@ impl Game {
                 continue;
             }
 
-            let resp = if inital {
-                self.players[turn as usize].preflop(0, &game_state.banker, &game_state.player_states[turn as usize])
-            } else {
-                self.players[turn as usize].turn(active_bet, &game_state.banker, &game_state.player_states[turn as usize], &(game_state.board))
+            let resp = match round {
+                ROUND::PREFLOP => self.players[turn as usize].preflop(0, &self.banker, &game_state.player_states[turn as usize]),
+                ROUND::FLOP => self.players[turn as usize].turn(active_bet, &self.banker, &game_state.player_states[turn as usize], &(game_state.board)),
+                ROUND::TURN => self.players[turn as usize].turn(active_bet, &self.banker, &game_state.player_states[turn as usize], &(game_state.board)),
+                ROUND::RIVER => self.players[turn as usize].turn(active_bet, &self.banker, &game_state.player_states[turn as usize], &(game_state.board)),
             };
+
 
             active_bet = match resp {
                 Response::Raise(price) => {
@@ -104,13 +127,15 @@ impl Game {
                         panic!("Attempting to Raise less than or equal to active bet");
                     } else {
                         bet_starter = turn;
-                        game_state.banker.bet(turn, price);
+                        self.banker.bet(turn, price);
+                        game_state.player_states[turn as usize].total_amt_bet += price;
                         println!("Player {} raises to {}", turn, price);
                         price
                     }
                 },
                 Response::Call => {
-                    game_state.banker.bet(turn, active_bet);
+                    self.banker.bet(turn, active_bet);
+                    game_state.player_states[turn as usize].total_amt_bet += active_bet;
                     if active_bet == 0 {
                         println!("Player {} checks", turn);
                     } else {
@@ -140,16 +165,14 @@ impl Game {
 
 struct GameState {
     player_states: Vec<PlayerState>,
-    board: Vec<Card>,
-    banker: Banker
+    board: Vec<Card>
 }
 
 impl GameState {
     fn new(num_players: u32) -> Self {
         Self {
             player_states: Vec::with_capacity(num_players as usize),
-            board: Vec::new(),
-            banker: Banker::new(num_players, 100)
+            board: Vec::new()
         }
     }
 }
@@ -159,11 +182,12 @@ impl GameState {
 pub struct PlayerState {
     id: u32,
     cards: [Card; 2],
-    in_game: bool
+    in_game: bool,
+    total_amt_bet: u32
 }
 
 impl PlayerState {
     pub fn new(id: u32, cards: [Card; 2]) -> Self {
-        Self { id, cards, in_game: true }
+        Self { id, cards, in_game: true, total_amt_bet: 0 }
     }
 }

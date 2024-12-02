@@ -18,7 +18,7 @@ impl Banker {
         self.pot += amt;
     }
 
-    pub fn win(&mut self, player: u32, amt: u32) {
+    pub fn win(&mut self, player: u32) {
         self.money[player as usize] += self.pot;
         self.pot = 0;
     }
