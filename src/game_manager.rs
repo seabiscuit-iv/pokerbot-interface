@@ -22,17 +22,12 @@ impl Game {
         Self {
             deck: Deck::default(),
             num_players: players.len() as u32,
-            banker: Banker::new(players.len() as u32, 100),
+            banker: Banker::new(players.len() as u32, 8000),
             players,
         }
     }
 
     pub fn play_round(&mut self) {
-        for player in self.banker.money.iter().enumerate() {
-            println!("Player {} has {}", player.0, player.1);
-        }
-        println!("");
-
         self.deck.reset();
         self.deck.shuffle();
 
@@ -52,7 +47,14 @@ impl Game {
         }
 
         //Pre-Flop Bets
-        self.bet_rounds(&mut game_state, self.num_players,  ROUND::PREFLOP);
+        if self.bet_rounds(&mut game_state, self.num_players, ROUND::PREFLOP).inspect_err(|id| {
+            self.banker.win(*id);
+
+            println!("Winner: Player {}, all folds", id);
+            return;
+        }).is_err() {
+            return;
+        };
         println!("Pot is now {}\n", self.banker.pot);
 
         //Flop
@@ -65,7 +67,14 @@ impl Game {
         println!("Flop: {}", display_cards(&game_state.board));
 
         //Flop Bets
-        self.bet_rounds(&mut game_state, self.num_players, ROUND::FLOP);
+        if self.bet_rounds(&mut game_state, self.num_players, ROUND::FLOP).inspect_err(|id| {
+            self.banker.win(*id);
+
+            println!("Winner: Player {}, all folds", id);
+            return;
+        }).is_err() {
+            return;
+        };
         println!("Pot is now {}\n", self.banker.pot);
 
 
@@ -74,7 +83,14 @@ impl Game {
         println!("Turn: {}", display_cards(&game_state.board));
 
         //Turn Bets
-        self.bet_rounds(&mut game_state, self.num_players, ROUND::TURN);
+        if self.bet_rounds(&mut game_state, self.num_players, ROUND::TURN).inspect_err(|id| {
+            self.banker.win(*id);
+
+            println!("Winner: Player {}, all folds", id);
+            return;
+        }).is_err() {
+            return;
+        };
         println!("Pot is now {}\n", self.banker.pot);
 
 
@@ -83,12 +99,25 @@ impl Game {
         println!("River: {}", display_cards(&game_state.board));
 
         //River Bets
-        self.bet_rounds(&mut game_state, self.num_players, ROUND::RIVER);
+        if self.bet_rounds(&mut game_state, self.num_players, ROUND::RIVER).inspect_err(|id| {
+            self.banker.win(*id);
+
+            println!("Winner: Player {}, all folds", id);
+            return;
+        }).is_err() {
+            return;
+        };
         println!("Pot is now {}\n", self.banker.pot);
         
         //Showdown
         let mut states = game_state.player_states;
         states.sort_by(|a, d| {
+            if !a.in_game {
+                return std::cmp::Ordering::Less
+            } else if !d.in_game {
+                return std::cmp::Ordering::Greater
+            }
+
             let board: [Card; 5]  = game_state.board.clone().try_into().unwrap();
             compare_hands(best_hand(&a.cards, board).0, best_hand(&d.cards, board).0)
         });
@@ -97,20 +126,23 @@ impl Game {
         self.banker.win(winner.id);
 
         println!("Winner: Player {} with a {:?}\n", winner.id, best_hand(&winner.cards, game_state.board.clone().try_into().unwrap()).1);
-    
-        for player in self.banker.money.iter().enumerate() {
-            println!("Player {} has {}", player.0, player.1);
-        }
     }
 
-    fn bet_rounds(&mut self, game_state: &mut GameState, num_players: u32, round: ROUND) {
+    fn bet_rounds(&mut self, game_state: &mut GameState, num_players: u32, round: ROUND) -> std::result::Result<u32, u32> {
         let mut turn: u32 = 0;
         let mut active_bet: u32 = 0;
         let mut bet_starter: u32 = 0;
 
         loop {
             if !game_state.player_states[turn as usize].in_game {
-                continue;
+                turn += 1;
+                turn = turn % num_players; 
+
+                if bet_starter == turn {
+                    break;
+                } else {
+                    continue;
+                }
             }
 
             let resp = match round {
@@ -153,11 +185,27 @@ impl Game {
             turn += 1;
             turn = turn % num_players; 
 
-            
+            let x : Vec<&PlayerState> = game_state.player_states.iter().filter(|p| p.in_game).collect();
+
+            if x.len() == 1 {
+                return Err(x[0].id);
+            }
+
             if bet_starter == turn {
                 break;
             }
         };
+
+        Ok(0)
+    }
+
+
+    pub fn print_values(&self) {
+        println!("");
+        for player in self.banker.money.iter().enumerate() {
+            println!("Player {} has {}", player.0, player.1);
+        }
+        println!("");
     }
 }
 

@@ -3,11 +3,14 @@ mod hands;
 mod banker;
 mod pokerbot;
 mod game_manager;
+mod basicpokerbot;
 
 
-use card::{Card, Deck, Suit, Value};
+use card::{Card, Suit, Value};
 use game_manager::Game;
-use pokerbot::{BasicPokerBot, PokerBot};
+use pokerbot::PokerBot;
+
+use basicpokerbot::BasicPokerBot;
 
 fn main() {
 
@@ -51,9 +54,16 @@ fn main() {
 
     bots.push(Box::new(BasicPokerBot));
     bots.push(Box::new(BasicPokerBot));
+    bots.push(Box::new(BasicPokerBot));
+    bots.push(Box::new(BasicPokerBot));
 
     let mut game = Game::new(bots);
-    game.play_round();
+
+    (0..2).for_each(|i| {
+        println!("Round {}", i);
+        game.play_round();
+        game.print_values();
+    });
 
     // println!("COOKIE");
 }
