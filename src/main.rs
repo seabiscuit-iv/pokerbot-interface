@@ -54,6 +54,8 @@ fn main() {
 
     let mut game = Game::new(bots);
     game.play_round();
+
+    // println!("COOKIE");
 }
 
 
