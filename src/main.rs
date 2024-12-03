@@ -59,7 +59,7 @@ fn main() {
 
     let mut game = Game::new(bots);
 
-    (0..2).for_each(|i| {
+    (0..50).for_each(|i| {
         println!("Round {}", i);
         game.play_round();
         game.print_values();

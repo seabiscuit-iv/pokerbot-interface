@@ -22,7 +22,7 @@ impl Game {
         Self {
             deck: Deck::default(),
             num_players: players.len() as u32,
-            banker: Banker::new(players.len() as u32, 8000),
+            banker: Banker::new(players.len() as u32, 1000),
             players,
         }
     }
@@ -133,6 +133,10 @@ impl Game {
         let mut active_bet: u32 = 0;
         let mut bet_starter: u32 = 0;
 
+        game_state.player_states.iter_mut().for_each(|p| {
+            p.total_amt_bet = 0;
+        });
+
         loop {
             if !game_state.player_states[turn as usize].in_game {
                 turn += 1;
@@ -159,15 +163,15 @@ impl Game {
                         panic!("Attempting to Raise less than or equal to active bet");
                     } else {
                         bet_starter = turn;
-                        self.banker.bet(turn, price);
-                        game_state.player_states[turn as usize].total_amt_bet += price;
+                        self.banker.bet(turn, price - game_state.player_states[turn as usize].total_amt_bet);
+                        game_state.player_states[turn as usize].total_amt_bet = price;
                         println!("Player {} raises to {}", turn, price);
                         price
                     }
                 },
                 Response::Call => {
-                    self.banker.bet(turn, active_bet);
-                    game_state.player_states[turn as usize].total_amt_bet += active_bet;
+                    self.banker.bet(turn, active_bet - game_state.player_states[turn as usize].total_amt_bet);
+                    game_state.player_states[turn as usize].total_amt_bet = active_bet;
                     if active_bet == 0 {
                         println!("Player {} checks", turn);
                     } else {

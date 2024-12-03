@@ -46,7 +46,14 @@ impl PokerBot for BasicPokerBot {
         let cards=  board.iter().chain(player_state.cards.iter()).map(|x| *x).collect::<Vec<Card>>();
         let best_hand = best_hand_varsize(cards).1;
 
-        if best_hand > HandType::HighCard(crate::card::Value::Ace) {      
+        if best_hand > HandType::Pair(crate::card::Value::Ten) {
+            if active_bet < 40 {
+                Response::Raise(40)
+            } else {
+                Response::Call
+            }
+        }
+        else if best_hand > HandType::HighCard(crate::card::Value::Ace) {      
             if active_bet > 20 {
                 Response::Fold
             } else if active_bet < 5 {
@@ -54,7 +61,8 @@ impl PokerBot for BasicPokerBot {
             } else {
                 Response::Call
             }
-        } else {
+        }
+        else {
             if active_bet <= 0 {
                 Response::Call
             } else {
