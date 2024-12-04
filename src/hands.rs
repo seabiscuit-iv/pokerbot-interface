@@ -334,7 +334,7 @@ pub fn best_hand_varsize(cards: Vec<Card>) -> (Hand, HandType) {
     let hand = cards
         .iter()
         .combinations(5)
-        .max_by(|a, d| {
+        .max_by(    |a, d| {
             compare_hands(
                 a.iter().map(|x|  {**x}).collect::<Vec<Card>>().into(),
                 d.iter().map(|x|  {**x}).collect::<Vec<Card>>().into(),

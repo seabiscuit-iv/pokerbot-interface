@@ -235,7 +235,7 @@ pub struct PlayerState {
     id: u32,
     pub cards: [Card; 2],
     in_game: bool,
-    total_amt_bet: u32
+    pub total_amt_bet: u32
 }
 
 impl PlayerState {
