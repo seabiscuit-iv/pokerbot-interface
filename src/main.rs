@@ -4,6 +4,7 @@ mod banker;
 mod pokerbot;
 mod game_manager;
 mod basicpokerbot;
+mod tui_pokerbot;
 
 
 use card::{Card, Suit, Value};
@@ -11,6 +12,7 @@ use game_manager::Game;
 use pokerbot::PokerBot;
 
 use basicpokerbot::BasicPokerBot;
+use tui_pokerbot::TUIPokerBot;
 
 fn main() {
 
