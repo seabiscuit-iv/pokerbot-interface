@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+eframe = "0.30.0"
+egui = "0.30.0"
+egui_plot = "0.30.0"
 itertools = "0.13.0"
 rand = "0.8.5"
 strum = "0.26.3"
