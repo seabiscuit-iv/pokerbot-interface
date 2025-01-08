@@ -43,7 +43,7 @@ impl Default for PokerPlot {
         bots.push(Box::new(BasicPokerBot));
         bots.push(Box::new(BasicPokerBot));
         bots.push(Box::new(BasicPokerBot));
-        bots.push(Box::new(BasicPokerBot));
+        bots.push(Box::new(TUIPokerBot));
         
         let numplayers = bots.len();
 
