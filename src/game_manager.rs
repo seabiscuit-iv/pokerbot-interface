@@ -203,13 +203,18 @@ impl Game {
         Ok(0)
     }
 
-
     pub fn print_values(&self) {
         println!("");
+
         for player in self.banker.money.iter().enumerate() {
             println!("Player {} has {}", player.0, player.1);
         }
         println!("");
+    }
+
+
+    pub fn get_player_money(&self, i: usize) -> u32{
+        self.banker.money[i]
     }
 }
 
