@@ -45,6 +45,9 @@ impl Default for PokerPlot {
         bots.push(Box::new(BasicPokerBot));
         bots.push(Box::new(BasicPokerBot));
         // bots.push(Box::new(TUIPokerBot));
+        // bots.push(Box::new(TUIPokerBot));
+        // bots.push(Box::new(TUIPokerBot));
+        // bots.push(Box::new(TUIPokerBot));
         
         let numplayers = bots.len();
 
@@ -82,7 +85,7 @@ impl eframe::App for PokerPlot {
                 .legend(Legend::default())
                 .show(ui, |plot_ui| {
 
-                    plot_ui.set_plot_bounds(PlotBounds::from_min_max([0.0, 500.0], [50.0, 1500.0]));
+                    plot_ui.set_plot_bounds(PlotBounds::from_min_max([0.0, 2500.0], [50.0, 5500.0]));
                     plot_ui.set_auto_bounds(Vec2b::new(true, false));
                     // plot_ui.points(
                     //     Points::new(self.player_one.clone())

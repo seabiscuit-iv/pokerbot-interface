@@ -2,6 +2,7 @@
 use crate::{banker::{Banker, Response}, card::{Card, Deck}, hands::{best_hand, compare_hands, display_cards}, pokerbot::PokerBot};
 
 
+#[derive(PartialEq, Eq)]
 enum ROUND {
     PREFLOP,
     FLOP,
@@ -23,7 +24,7 @@ impl Game {
         Self {
             deck: Deck::default(),
             num_players: players.len() as u32,
-            banker: Banker::new(players.len() as u32, 1000),
+            banker: Banker::new(players.len() as u32, 4000),
             players,
             dealer: 0
         }
@@ -145,6 +146,8 @@ impl Game {
             p.total_amt_bet = 0;
         });
 
+        let mut c = 0;
+
         loop {
             if !game_state.player_states[turn as usize].in_game {
                 turn += 1;
@@ -157,11 +160,21 @@ impl Game {
                 }
             }
 
-            let resp = match round {
-                ROUND::PREFLOP => self.players[turn as usize].preflop(0, &self.banker, &game_state.player_states[turn as usize]),
-                ROUND::FLOP => self.players[turn as usize].flop(active_bet, &self.banker, &game_state.player_states[turn as usize], &(game_state.board)),
-                ROUND::TURN => self.players[turn as usize].turn(active_bet, &self.banker, &game_state.player_states[turn as usize], &(game_state.board)),
-                ROUND::RIVER => self.players[turn as usize].river(active_bet, &self.banker, &game_state.player_states[turn as usize], &(game_state.board)),
+            let resp = if round == ROUND::PREFLOP && (c == 0 || c == 1){
+                if c == 0 {
+                    println!("Player {turn} Small Blind");
+                    Response::Raise(5)
+                } else {
+                    println!("Player {turn} Big Blind");
+                    Response::Raise(10)
+                }
+            } else {
+                match round {
+                    ROUND::PREFLOP => self.players[turn as usize].preflop(active_bet, &self.banker, &game_state.player_states[turn as usize]),
+                    ROUND::FLOP => self.players[turn as usize].flop(active_bet, &self.banker, &game_state.player_states[turn as usize], &(game_state.board)),
+                    ROUND::TURN => self.players[turn as usize].turn(active_bet, &self.banker, &game_state.player_states[turn as usize], &(game_state.board)),
+                    ROUND::RIVER => self.players[turn as usize].river(active_bet, &self.banker, &game_state.player_states[turn as usize], &(game_state.board)),
+                }
             };
 
 
@@ -193,9 +206,15 @@ impl Game {
                     active_bet
                 },
             };
+            
+            if c == 2 && round == ROUND::PREFLOP {
+                bet_starter = turn;
+            }
 
             turn += 1;
             turn = turn % num_players; 
+
+            c += 1;
 
             let x : Vec<&PlayerState> = game_state.player_states.iter().filter(|p| p.in_game).collect();
 
