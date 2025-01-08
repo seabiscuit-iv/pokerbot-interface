@@ -15,6 +15,7 @@ pub struct Game {
     num_players: u32,
     banker: Banker,
     players: Vec<Box<dyn PokerBot>>,
+    dealer: u32
 }
 
 impl Game {
@@ -24,12 +25,17 @@ impl Game {
             num_players: players.len() as u32,
             banker: Banker::new(players.len() as u32, 1000),
             players,
+            dealer: 0
         }
     }
 
     pub fn play_round(&mut self) {
         self.deck.reset();
         self.deck.shuffle();
+
+        //move dealer
+        self.dealer += 1;
+        self.dealer = self.dealer % self.num_players;
 
         let mut game_state = GameState::new(self.num_players);
 
@@ -46,8 +52,10 @@ impl Game {
             println!("Player {}: {}", i, display_cards(&player.cards));
         }
 
+        println!("");
+
         //Pre-Flop Bets
-        if self.bet_rounds(&mut game_state, self.num_players, ROUND::PREFLOP).inspect_err(|id| {
+        if self.bet_rounds(&mut game_state, self.num_players, ROUND::PREFLOP, self.dealer).inspect_err(|id| {
             self.banker.win(*id);
 
             println!("Winner: Player {}, all folds", id);
@@ -67,7 +75,7 @@ impl Game {
         println!("Flop: {}", display_cards(&game_state.board));
 
         //Flop Bets
-        if self.bet_rounds(&mut game_state, self.num_players, ROUND::FLOP).inspect_err(|id| {
+        if self.bet_rounds(&mut game_state, self.num_players, ROUND::FLOP, self.dealer).inspect_err(|id| {
             self.banker.win(*id);
 
             println!("Winner: Player {}, all folds", id);
@@ -83,7 +91,7 @@ impl Game {
         println!("Turn: {}", display_cards(&game_state.board));
 
         //Turn Bets
-        if self.bet_rounds(&mut game_state, self.num_players, ROUND::TURN).inspect_err(|id| {
+        if self.bet_rounds(&mut game_state, self.num_players, ROUND::TURN, self.dealer).inspect_err(|id| {
             self.banker.win(*id);
 
             println!("Winner: Player {}, all folds", id);
@@ -99,7 +107,7 @@ impl Game {
         println!("River: {}", display_cards(&game_state.board));
 
         //River Bets
-        if self.bet_rounds(&mut game_state, self.num_players, ROUND::RIVER).inspect_err(|id| {
+        if self.bet_rounds(&mut game_state, self.num_players, ROUND::RIVER, self.dealer).inspect_err(|id| {
             self.banker.win(*id);
 
             println!("Winner: Player {}, all folds", id);
@@ -128,10 +136,10 @@ impl Game {
         println!("Winner: Player {} with a {:?}\n", winner.id, best_hand(&winner.cards, game_state.board.clone().try_into().unwrap()).1);
     }
 
-    fn bet_rounds(&mut self, game_state: &mut GameState, num_players: u32, round: ROUND) -> std::result::Result<u32, u32> {
-        let mut turn: u32 = 0;
+    fn bet_rounds(&mut self, game_state: &mut GameState, num_players: u32, round: ROUND, dealer: u32) -> std::result::Result<u32, u32> {
+        let mut turn: u32 = dealer;
         let mut active_bet: u32 = 0;
-        let mut bet_starter: u32 = 0;
+        let mut bet_starter: u32 = dealer;
 
         game_state.player_states.iter_mut().for_each(|p| {
             p.total_amt_bet = 0;
