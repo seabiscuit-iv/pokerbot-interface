@@ -40,5 +40,5 @@ Features that need to be implemented
 
 - [ ] **All In:** Logic to handle bots going all in, or if they do not have enough money to call the active bet. 
 - [ ] **Variable Starting Money:** Currently all bots start with 8000. This needs to be refactored to be controlled from `main.rs`
-- [ ] **EGUI Graphing and Local UI**
+- [x] **EGUI Graphing and Local UI**
 - [ ] **Dynamic Money Distribution:** Logic for chopping or handling side pots.
