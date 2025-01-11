@@ -180,6 +180,10 @@ impl Game {
 
             active_bet = match resp {
                 Response::Raise(price) => {
+                    if price > 400 {
+                        panic!("Player {} attempted to bet over limit of 400", turn);
+                    }
+
                     if price <= active_bet {
                         panic!("Attempting to Raise less than or equal to active bet");
                     } else {
