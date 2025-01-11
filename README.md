@@ -38,5 +38,8 @@ After creating a Pokerbot object with the trait, you can add it to the table in 
 ## TODO
 Features that need to be implemented 
 
-- [X] **Variable Starting Money:** Currently all bots start with 4000. This needs to be refactored to be controlled from `main.rs`
+- [x] **Blinds:** The dealer and blind positions rotate around the table, and the prices for small and big blind have been set to 5 and 10
+- [x] **Variable Starting Money:** Currently all bots start with 4000. This needs to be refactored to be controlled from `main.rs`
 - [x] **EGUI Graphing and Local UI**
+- [x] **Chopping:** Logic for games where multiple players win/tie, and chopping money between them.
+- [ ] **All-In and Side Pot Handling:** Logic for all-ins and side pots need to be handled.
