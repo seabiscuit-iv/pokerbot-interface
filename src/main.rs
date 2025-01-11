@@ -51,7 +51,7 @@ impl Default for PokerPlot {
         
         let numplayers = bots.len();
 
-        let mut game = Game::new(bots);
+        let mut game = Game::new(bots, 4000);
 
         let mut players : Vec<Vec<_>> = (0..numplayers).map(|_| vec![]).collect();
         

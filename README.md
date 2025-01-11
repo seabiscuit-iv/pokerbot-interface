@@ -38,7 +38,5 @@ After creating a Pokerbot object with the trait, you can add it to the table in 
 ## TODO
 Features that need to be implemented 
 
-- [ ] **All In:** Logic to handle bots going all in, or if they do not have enough money to call the active bet. 
-- [ ] **Variable Starting Money:** Currently all bots start with 8000. This needs to be refactored to be controlled from `main.rs`
+- [X] **Variable Starting Money:** Currently all bots start with 4000. This needs to be refactored to be controlled from `main.rs`
 - [x] **EGUI Graphing and Local UI**
-- [ ] **Dynamic Money Distribution:** Logic for chopping or handling side pots.

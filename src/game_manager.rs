@@ -1,4 +1,6 @@
 
+use core::panic;
+
 use crate::{banker::{Banker, Response}, card::{Card, Deck}, hands::{best_hand, compare_hands, display_cards}, pokerbot::PokerBot};
 
 
@@ -20,11 +22,11 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(players: Vec<Box<dyn PokerBot>>) -> Self{
+    pub fn new(players: Vec<Box<dyn PokerBot>>, starting_money: u32) -> Self{
         Self {
             deck: Deck::default(),
             num_players: players.len() as u32,
-            banker: Banker::new(players.len() as u32, 4000),
+            banker: Banker::new(players.len() as u32, starting_money),
             players,
             dealer: 0
         }
@@ -57,7 +59,7 @@ impl Game {
 
         //Pre-Flop Bets
         if self.bet_rounds(&mut game_state, self.num_players, ROUND::PREFLOP, self.dealer).inspect_err(|id| {
-            self.banker.win(*id);
+            self.banker.win(vec![*id]);
 
             println!("Winner: Player {}, all folds", id);
             return;
@@ -77,7 +79,7 @@ impl Game {
 
         //Flop Bets
         if self.bet_rounds(&mut game_state, self.num_players, ROUND::FLOP, self.dealer).inspect_err(|id| {
-            self.banker.win(*id);
+            self.banker.win(vec![*id]);
 
             println!("Winner: Player {}, all folds", id);
             return;
@@ -93,7 +95,7 @@ impl Game {
 
         //Turn Bets
         if self.bet_rounds(&mut game_state, self.num_players, ROUND::TURN, self.dealer).inspect_err(|id| {
-            self.banker.win(*id);
+            self.banker.win(vec![*id]);
 
             println!("Winner: Player {}, all folds", id);
             return;
@@ -109,7 +111,7 @@ impl Game {
 
         //River Bets
         if self.bet_rounds(&mut game_state, self.num_players, ROUND::RIVER, self.dealer).inspect_err(|id| {
-            self.banker.win(*id);
+            self.banker.win(vec![*id]);
 
             println!("Winner: Player {}, all folds", id);
             return;
@@ -120,7 +122,8 @@ impl Game {
         
         //Showdown
         let mut states = game_state.player_states;
-        states.sort_by(|a, d| {
+
+        let compare = |a: &PlayerState, d: &PlayerState| {
             if !a.in_game {
                 return std::cmp::Ordering::Less
             } else if !d.in_game {
@@ -129,10 +132,25 @@ impl Game {
 
             let board: [Card; 5]  = game_state.board.clone().try_into().unwrap();
             compare_hands(best_hand(&a.cards, board).0, best_hand(&d.cards, board).0)
-        });
+        };
+
+        states.sort_by(compare);
 
         let winner = states.last().unwrap();
-        self.banker.win(winner.id);
+
+        let mut winners = vec![winner.id];
+
+        for player in states.iter().rev().skip(1) {
+            let r = compare(winner, player);
+
+            match r {
+                std::cmp::Ordering::Less => panic!("Winner is less than next best hand"),
+                std::cmp::Ordering::Equal => winners.push(player.id),
+                std::cmp::Ordering::Greater => break,
+            }
+        }
+
+        self.banker.win(winners);
 
         println!("Winner: Player {} with a {:?}\n", winner.id, best_hand(&winner.cards, game_state.board.clone().try_into().unwrap()).1);
     }
