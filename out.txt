@@ -1,0 +1,81 @@
+Dealing Cards
+Player 0: 3-D 6-H
+Player 1: 2-S J-H
+Player 2: T-S 2-C
+Player 3: T-D A-S
+
+Player 1 Small Blind
+Player 1 raises to 5
+Player 2 Big Blind
+Player 2 raises to 10
+Player 3 calls
+Player 0 calls
+Player 1 calls
+Player 2 calls
+Pot is now 40
+
+Flop: 3-C 4-S J-D
+Player 1 raises to 25
+Player 2 folds
+Player 3 folds
+Player 0 calls
+Pot is now 90
+
+Turn: 3-C 4-S J-D 2-H
+Player 1 raises to 100
+Player 0 folds
+Winner: Player 1, all folds
+
+
+
+
+Player 0 has 3965
+Player 1 has 4055
+Player 2 has 3990
+Player 3 has 3990
+
+Dealing Cards
+Player 0: 6-C 9-C
+Player 1: 7-D T-C
+Player 2: J-H K-H
+Player 3: 6-S 4-H
+
+Player 2 Small Blind
+Player 2 raises to 5
+Player 3 Big Blind
+Player 3 raises to 10
+Player 0 calls
+Player 1 calls
+Player 2 calls
+Player 3 calls
+Pot is now 40
+
+Flop: 8-S 7-H 9-D
+Player 2 checks
+Player 3 checks
+Player 0 raises to 25
+Player 1 calls
+Player 2 folds
+Player 3 folds
+Pot is now 90
+
+Turn: 8-S 7-H 9-D Q-C
+Player 0 raises to 50
+Player 1 calls
+Pot is now 190
+
+River: 8-S 7-H 9-D Q-C Q-S
+Player 0 raises to 25
+Player 1 calls
+Pot is now 240
+
+Winner: Player 0 with a TwoPair(Queen, Nine)
+
+
+
+
+Player 0 has 4095
+Player 1 has 3945
+Player 2 has 3980
+Player 3 has 3980
+

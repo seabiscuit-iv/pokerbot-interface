@@ -51,11 +51,11 @@ impl Default for PokerPlot {
         
         let numplayers = bots.len();
 
-        let mut game = Game::new(bots, 4000);
+        let mut game = Game::new(bots, 4000, "out.txt");
 
         let mut players : Vec<Vec<_>> = (0..numplayers).map(|_| vec![]).collect();
         
-        (0..50).for_each(|i| {
+        (0..2).for_each(|i| {
             println!("Round {}", i);
             game.play_round();
             game.print_values();

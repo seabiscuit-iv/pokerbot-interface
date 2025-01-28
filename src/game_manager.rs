@@ -2,6 +2,8 @@
 use core::panic;
 
 use crate::{banker::{Banker, Response}, card::{Card, Deck}, hands::{best_hand, compare_hands, display_cards}, pokerbot::PokerBot};
+use std::fs::{self, File, OpenOptions};
+use std::io::Write;
 
 
 #[derive(PartialEq, Eq)]
@@ -18,15 +20,20 @@ pub struct Game {
     num_players: u32,
     banker: Banker,
     players: Vec<Box<dyn PokerBot>>,
-    dealer: u32
+    dealer: u32,
+    log: File
 }
 
 impl Game {
-    pub fn new(players: Vec<Box<dyn PokerBot>>, starting_money: u32) -> Self{
+    pub fn new(players: Vec<Box<dyn PokerBot>>, starting_money: u32, logfile_path: &str) -> Self{
         Self {
             deck: Deck::default(),
             num_players: players.len() as u32,
             banker: Banker::new(players.len() as u32, starting_money),
+            log: OpenOptions::new().write(true)
+                .truncate(true)
+                .open(logfile_path)
+                .unwrap(),
             players,
             dealer: 0
         }
@@ -50,23 +57,23 @@ impl Game {
         });
 
         //Dealing Cards
-        println!("Dealing Cards");
+        writeln!(self.log, "Dealing Cards");
         for (i, player) in game_state.player_states.iter().enumerate() {
-            println!("Player {}: {}", i, display_cards(&player.cards));
+            writeln!(self.log, "{}", format!("Player {}: {}", i, display_cards(&player.cards)));
         }
 
-        println!("");
+        writeln!(self.log, "{}", format!(""));
 
         //Pre-Flop Bets
         if self.bet_rounds(&mut game_state, self.num_players, ROUND::PREFLOP, self.dealer).inspect_err(|id| {
             self.banker.win(vec![*id]);
 
-            println!("Winner: Player {}, all folds", id);
+            writeln!(self.log, "{}", format!("Winner: Player {}, all folds\n\n\n", id));
             return;
         }).is_err() {
             return;
         };
-        println!("Pot is now {}\n", self.banker.pot);
+        writeln!(self.log, "{}", format!("Pot is now {}\n", self.banker.pot));
 
         //Flop
         game_state.board.append(&mut [
@@ -75,50 +82,50 @@ impl Game {
             self.deck.draw()
         ].to_vec());
 
-        println!("Flop: {}", display_cards(&game_state.board));
+        writeln!(self.log, "{}", format!("Flop: {}", display_cards(&game_state.board)));
 
         //Flop Bets
         if self.bet_rounds(&mut game_state, self.num_players, ROUND::FLOP, self.dealer).inspect_err(|id| {
             self.banker.win(vec![*id]);
 
-            println!("Winner: Player {}, all folds", id);
+            writeln!(self.log, "{}", format!("Winner: Player {}, all folds\n\n\n", id));
             return;
         }).is_err() {
             return;
         };
-        println!("Pot is now {}\n", self.banker.pot);
+        writeln!(self.log, "{}", format!("Pot is now {}\n", self.banker.pot));
 
 
         //Turn
         game_state.board.push(self.deck.draw());
-        println!("Turn: {}", display_cards(&game_state.board));
+        writeln!(self.log, "{}", format!("Turn: {}", display_cards(&game_state.board)));
 
         //Turn Bets
         if self.bet_rounds(&mut game_state, self.num_players, ROUND::TURN, self.dealer).inspect_err(|id| {
             self.banker.win(vec![*id]);
 
-            println!("Winner: Player {}, all folds", id);
+            writeln!(self.log, "{}", format!("Winner: Player {}, all folds\n\n\n", id));
             return;
         }).is_err() {
             return;
         };
-        println!("Pot is now {}\n", self.banker.pot);
+        writeln!(self.log, "{}", format!("Pot is now {}\n", self.banker.pot));
 
 
         //River
         game_state.board.push(self.deck.draw());
-        println!("River: {}", display_cards(&game_state.board));
+        writeln!(self.log, "{}", format!("River: {}", display_cards(&game_state.board)));
 
         //River Bets
         if self.bet_rounds(&mut game_state, self.num_players, ROUND::RIVER, self.dealer).inspect_err(|id| {
             self.banker.win(vec![*id]);
 
-            println!("Winner: Player {}, all folds", id);
+            writeln!(self.log, "{}", format!("Winner: Player {}, all folds\n\n\n", id));
             return;
         }).is_err() {
             return;
         };
-        println!("Pot is now {}\n", self.banker.pot);
+        writeln!(self.log, "{}", format!("Pot is now {}\n", self.banker.pot));
         
         //Showdown
         let mut states = game_state.player_states;
@@ -152,7 +159,7 @@ impl Game {
 
         self.banker.win(winners);
 
-        println!("Winner: Player {} with a {:?}\n", winner.id, best_hand(&winner.cards, game_state.board.clone().try_into().unwrap()).1);
+        writeln!(self.log, "{}", format!("Winner: Player {} with a {:?}\n\n\n", winner.id, best_hand(&winner.cards, game_state.board.clone().try_into().unwrap()).1));
     }
 
     fn bet_rounds(&mut self, game_state: &mut GameState, num_players: u32, round: ROUND, dealer: u32) -> std::result::Result<u32, u32> {
@@ -180,10 +187,10 @@ impl Game {
 
             let resp = if round == ROUND::PREFLOP && (c == 0 || c == 1){
                 if c == 0 {
-                    println!("Player {turn} Small Blind");
+                    writeln!(self.log, "{}", format!("Player {turn} Small Blind"));
                     Response::Raise(5)
                 } else {
-                    println!("Player {turn} Big Blind");
+                    writeln!(self.log, "{}", format!("Player {turn} Big Blind"));
                     Response::Raise(10)
                 }
             } else {
@@ -208,7 +215,7 @@ impl Game {
                         bet_starter = turn;
                         self.banker.bet(turn, price - game_state.player_states[turn as usize].total_amt_bet);
                         game_state.player_states[turn as usize].total_amt_bet = price;
-                        println!("Player {} raises to {}", turn, price);
+                        writeln!(self.log, "{}", format!("Player {} raises to {}", turn, price));
                         price
                     }
                 },
@@ -216,15 +223,15 @@ impl Game {
                     self.banker.bet(turn, active_bet - game_state.player_states[turn as usize].total_amt_bet);
                     game_state.player_states[turn as usize].total_amt_bet = active_bet;
                     if active_bet == 0 {
-                        println!("Player {} checks", turn);
+                        writeln!(self.log, "{}", format!("Player {} checks", turn));
                     } else {
-                        println!("Player {} calls", turn);
+                        writeln!(self.log, "{}", format!("Player {} calls", turn));
                     }
                     active_bet
                 },
                 Response::Fold => {
                     game_state.player_states[turn as usize].in_game = false;
-                    println!("Player {} folds", turn);
+                    writeln!(self.log, "{}", format!("Player {} folds", turn));
                     active_bet
                 },
             };
@@ -252,13 +259,13 @@ impl Game {
         Ok(0)
     }
 
-    pub fn print_values(&self) {
-        println!("");
+    pub fn print_values(&mut self) {
+        writeln!(self.log, "{}", format!(""));
 
         for player in self.banker.money.iter().enumerate() {
-            println!("Player {} has {}", player.0, player.1);
+            writeln!(self.log, "{}", format!("Player {} has {}", player.0, player.1));
         }
-        println!("");
+        writeln!(self.log, "{}", format!(""));
     }
 
 
