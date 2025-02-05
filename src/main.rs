@@ -19,17 +19,45 @@ use pokerbot::PokerBot;
 use basicpokerbot::BasicPokerBot;
 // use tui_pokerbot::TUIPokerBot;
 
-fn main() -> eframe::Result {
-    let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([1100.0, 600.0]).with_position([60.0, 60.0]),
-        ..Default::default()
-    };
+// fn main() -> eframe::Result {
+    // let options = eframe::NativeOptions {
+    //     viewport: egui::ViewportBuilder::default().with_inner_size([1100.0, 600.0]).with_position([60.0, 60.0]),
+    //     ..Default::default()
+    // };
 
-    eframe::run_native(
-        "Plot",
-        options,
-        Box::new(|_cc| Ok(Box::<PokerPlot>::default())),
-    )
+    // eframe::run_native(
+    //     "Plot",
+    //     options,
+    //     Box::new(|_cc| Ok(Box::<PokerPlot>::default())),
+    // )
+// }
+
+fn main() {
+    let mut bots: Vec<Box<dyn PokerBot>> = Vec::new();
+    bots.push(Box::new(BasicPokerBot));
+    bots.push(Box::new(BasicPokerBot));
+    bots.push(Box::new(BasicPokerBot));
+    bots.push(Box::new(BasicPokerBot));
+    // bots.push(Box::new(TUIPokerBot));
+    // bots.push(Box::new(TUIPokerBot));
+    // bots.push(Box::new(TUIPokerBot));
+    // bots.push(Box::new(TUIPokerBot));
+    
+    let numplayers = bots.len();
+
+    let mut game = Game::new(bots, 4000, "out.txt");
+
+    let mut players : Vec<Vec<_>> = (0..numplayers).map(|_| vec![]).collect();
+    
+    (0..10).for_each(|i| {
+        println!("Round {}", i);
+        game.play_round();
+        game.print_values();
+
+        for x in 0..numplayers {
+            players[x].push([i as f64, game.get_player_money(x) as f64]);
+        }
+    });
 }
 
 struct PokerPlot {
