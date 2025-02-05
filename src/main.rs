@@ -9,7 +9,7 @@ mod tui_pokerbot;
 use std::f64;
 
 use eframe;
-use egui::{self, vec2, Color32, Vec2b, ViewportBuilder};
+use egui::{self, vec2, Color32, Vec2b};
 use egui_plot::*;
 
 use card::{Card, Suit, Value};
@@ -17,7 +17,6 @@ use game_manager::Game;
 use pokerbot::PokerBot;
 
 use basicpokerbot::BasicPokerBot;
-use tui_pokerbot::TUIPokerBot;
 
 fn main() -> eframe::Result {
     let options = eframe::NativeOptions {

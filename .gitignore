@@ -2,3 +2,4 @@
 .dockerignore
 dockerfile
 scripts
+out.txt
