@@ -18,8 +18,12 @@ impl Banker {
         self.pot += amt;
     }
 
-    pub fn win(&mut self, player: u32) {
-        self.money[player as usize] += self.pot;
+    pub fn win(&mut self, players: Vec<u32>) {
+        let money = self.pot / (players.len() as u32);
+        
+        for player in players {
+            self.money[player as usize] += money;
+        }
         self.pot = 0;
     }
 }

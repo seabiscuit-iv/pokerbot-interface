@@ -3,6 +3,38 @@ use crate::{banker::{Banker, Response}, card::Card, game_manager::PlayerState, h
 
 pub struct TUIPokerBot;
 
+fn next_int() -> u32{
+    use std::io::{stdin,stdout,Write};
+    let mut s=String::new();
+    print!("Resp: ");
+    let _=stdout().flush();
+    stdin().read_line(&mut s).expect("Did not enter a correct string");
+    if let Some('\n')=s.chars().next_back() {
+        s.pop();
+    }
+    if let Some('\r')=s.chars().next_back() {
+        s.pop();
+    }
+    let num: u32 = s.parse().expect("Illegal Argument Supplied");
+    num
+}
+
+fn next_char() -> char{
+    use std::io::{stdin,stdout,Write};
+    let mut s=String::new();
+    print!("Resp: ");
+    let _=stdout().flush();
+    stdin().read_line(&mut s).expect("Did not enter a correct string");
+    if let Some('\n')=s.chars().next_back() {
+        s.pop();
+    }
+    if let Some('\r')=s.chars().next_back() {
+        s.pop();
+    }
+    let c: char = s.parse().expect("Illegal Argument Supplied");
+    c
+}
+
 impl PokerBot for TUIPokerBot {
 
     fn observe(&self, player_id: u32, bet: u32) {
@@ -10,85 +42,65 @@ impl PokerBot for TUIPokerBot {
     }
     
     fn preflop(&self, active_bet: u32, bank: &Banker, player_state: &PlayerState) -> Response {
-        if active_bet <= 5 {
-            Response::Call
-        } else {
-            Response::Fold
+        println!("\nActive bet is {active_bet}\n");
+        let c = next_char();
+
+        match c {
+            'c' => { Response::Call },
+            'f' => { Response::Fold },
+            'r' => { 
+                let bet = next_int();
+                Response::Raise(bet)
+            },
+            _ => panic!("Illegal Char Supplied")
         }
+        // Response::Raise(400)
     }
 
     fn flop(&self, active_bet: u32, bank: &Banker, player_state: &PlayerState, board: &Vec<Card>) -> Response {
+        println!("\nActive bet is {active_bet}\n");
+        let c = next_char();
 
-        let cards: Hand =  board.iter().chain(player_state.cards.iter()).map(|x| *x).collect::<Vec<Card>>().try_into().unwrap();
-        let best_hand = get_hand_type(cards);
-
-        if best_hand > HandType::HighCard(crate::card::Value::Ace) {      
-            if active_bet > 10 {
-                Response::Fold
-            } else if active_bet < 5 {
-                Response::Raise(5)
-            } else {
-                Response::Call
-            }
-        } else {
-            if active_bet <= 0 {
-                Response::Call
-            } else {
-                Response::Fold
-            }
+        match c {
+            'c' => { Response::Call },
+            'f' => { Response::Fold },
+            'r' => { 
+                let bet = next_int();
+                Response::Raise(bet)
+            },
+            _ => panic!("Illegal Char Supplied")
         }
-
+        
+        // Response::Raise(400)
     }
 
     fn turn(&self, active_bet: u32, bank: &Banker, player_state: &PlayerState, board: &Vec<Card>) -> Response {
+        println!("\nActive bet is {active_bet}\n");
+        let c = next_char();
 
-        let cards=  board.iter().chain(player_state.cards.iter()).map(|x| *x).collect::<Vec<Card>>();
-        let best_hand = best_hand_varsize(cards).1;
-
-        if best_hand > HandType::Pair(crate::card::Value::Ten) {
-            if active_bet < 40 {
-                Response::Raise(40)
-            } else {
-                Response::Call
-            }
+        match c {
+            'c' => { Response::Call },
+            'f' => { Response::Fold },
+            'r' => { 
+                let bet = next_int();
+                Response::Raise(bet)
+            },
+            _ => panic!("Illegal Char Supplied")
         }
-        else if best_hand > HandType::HighCard(crate::card::Value::Ace) {      
-            if active_bet > 20 {
-                Response::Fold
-            } else if active_bet < 5 {
-                Response::Raise(10)
-            } else {
-                Response::Call
-            }
-        }
-        else {
-            if active_bet <= 0 {
-                Response::Call
-            } else {
-                Response::Fold
-            }
-        }
-
     }
 
     fn river(&self, active_bet: u32, bank: &Banker, player_state: &PlayerState, board: &Vec<Card>) -> Response {
-        let cards=  board.iter().chain(player_state.cards.iter()).map(|x| *x).collect::<Vec<Card>>();
-        let best_hand = best_hand_varsize(cards).1;
+        println!("\nActive bet is {active_bet}\n");
+        let c = next_char();
 
-        if best_hand > HandType::HighCard(crate::card::Value::Ace) {      
-            if active_bet > 20 {
-                Response::Fold
-            } else if active_bet < 5 {
-                Response::Raise(10)
-            } else {
-                Response::Call
-            }
-        } else {
-            if active_bet <= 0 {
-                Response::Call
-            } else {
-                Response::Fold
-            }
+        match c {
+            'c' => { Response::Call },
+            'f' => { Response::Fold },
+            'r' => { 
+                let bet = next_int();
+                Response::Raise(bet)
+            },
+            _ => panic!("Illegal Char Supplied")
         }
     }
 }
